@@ -4,6 +4,33 @@
 
 #include "ll/api/mod/RegisterHelper.h"
 
+
+#include "ll/api/memory/Hook.h"
+#include "mc/world/level/ChunkPos.h"
+#include "mc/world/level/chunk/LevelChunk.h"
+#include "mc/world/level/levelgen/v1/OverworldGenerator.h"
+
+
+LL_AUTO_TYPE_INSTANCE_HOOK(
+    LoadChunkHook,
+    ll::memory::HookPriority::High,
+    OverworldGenerator,
+    "?loadChunk@OverworldGenerator@@UEAAXAEAVLevelChunk@@_N@Z",
+    void,
+    LevelChunk& a1,
+    bool        a2
+) {
+    if (a1.getPosition().x != 0) {
+        a1.setSaved();
+        a1.recomputeHeightMap(0);
+        a1.changeState(::ChunkState::Generating, ::ChunkState::Generated);
+        return;
+    }
+
+    origin(a1, a2);
+}
+
+
 namespace my_mod {
 
 static std::unique_ptr<MyMod> instance;
